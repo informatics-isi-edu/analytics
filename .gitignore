@@ -1,0 +1,10 @@
+bower_components
+lib
+.idea/
+vendor
+auth/key.json
+auth/key.p12
+
+HOWTO.md
+
+.sass-cache

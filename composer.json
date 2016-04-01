@@ -1,0 +1,27 @@
+{
+  "name": "AA Google Analytics",
+  "description": "Authentication-Automated Google Analytics",
+  "type": "project",
+  "keywords": [
+    "analytics", "google analytics", "server authentication"
+  ],
+  "authors": [
+    {
+      "name": "Aref Shafaeibejestan",
+      "email": "ashafaei@usc.edu"
+    }
+  ],
+  "config": {
+    "preferred-install": "dist"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/src"
+    }
+  },
+  "require": {
+    "google/apiclient": "1.0.*@beta"
+  },
+  "require-dev": {
+  }
+}
