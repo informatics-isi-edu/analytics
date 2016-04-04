@@ -32,18 +32,22 @@ Element for selecting the start and end date values for queries inside a
     :host {
       display: inline-block;
     }
+
     .control {
       @apply(--google-analytics-date-selector-control);
     }
+
     label {
       @apply(--google-analytics-date-selector-label);
     }
+
     input {
       color: inherit;
       font: inherit;
       margin: 0;
       @apply(--google-analytics-date-selector-input);
     }
+
     input:focus {
       @apply(--google-analytics-date-selector-input-focus);
     }
@@ -53,23 +57,27 @@ Element for selecting the start and end date values for queries inside a
     <div class="form-inline">
       <div class="form-group">
         <label for="startDate">Start Date</label>
-        <input
-          class="form-control"
-          id="startDate"
-          type="date"
-          value="{{startDate::change}}"
-          min="{{minStartDate}}"
-          max="{{endDate}}">
+        <div>
+          <input
+              class="form-control"
+              id="startDate"
+              type="date"
+              value="{{startDate::change}}"
+              min="{{minStartDate}}"
+              max="{{endDate}}">
+        </div>
       </div>
       <div class="form-group">
         <label for="endDate">End Date</label>
-        <input
-          class="form-control"
-          id="endDate"
-          type="date"
-          value="{{endDate::change}}"
-          min="{{startDate}}"
-          max="{{maxEndDate}}">
+        <div>
+          <input
+              class="form-control"
+              id="endDate"
+              type="date"
+              value="{{endDate::change}}"
+              min="{{startDate}}"
+              max="{{maxEndDate}}">
+        </div>
       </div>
     </div>
   </template>
@@ -78,7 +86,7 @@ Element for selecting the start and end date values for queries inside a
 
 <script>
 
-  (function() {
+  (function () {
 
     'use strict';
 
@@ -124,9 +132,9 @@ Element for selecting the start and end date values for queries inside a
       var date = new Date();
       date.setDate(date.getDate() - numDays);
       var month = String(date.getMonth() + 1);
-      month = month.length == 1 ? '0' + month: month;
+      month = month.length == 1 ? '0' + month : month;
       var day = String(date.getDate());
-      day = day.length == 1 ? '0' + day: day;
+      day = day.length == 1 ? '0' + day : day;
       return date.getFullYear() + '-' + month + '-' + day;
     }
 
@@ -200,7 +208,7 @@ Element for selecting the start and end date values for queries inside a
         }
       },
 
-      startDateChanged: function(cur, old) {
+      startDateChanged: function (cur, old) {
         this.startDate = convertDate(cur);
         this.$.startDate.value = this.startDate;
         this.fire('analytics-dashboard-control-change', {
@@ -208,7 +216,7 @@ Element for selecting the start and end date values for queries inside a
         });
       },
 
-      endDateChanged: function(cur, old) {
+      endDateChanged: function (cur, old) {
         this.endDate = convertDate(cur);
         this.$.endDate.value = this.endDate;
         this.fire('analytics-dashboard-control-change', {

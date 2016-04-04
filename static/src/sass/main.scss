@@ -1,4 +1,4 @@
-*{
+* {
   box-sizing: inherit;
 }
 
@@ -7,7 +7,7 @@ header {
   border-top: 5px solid hsl(34, 93%, 54%);
   box-shadow: 0 0 .5em rgba(0, 0, 0, .1);
   color: hsl(0, 0%, 47%);
-  padding: 3em 2em 2em;
+  padding: 1em;
 }
 
 header > h1 {
@@ -35,7 +35,7 @@ google-signin {
  */
 google-analytics-dashboard {
   display: block;
-  padding: 2em;
+  padding: 1em;
   transition: opacity .3s ease;
 }
 
@@ -47,7 +47,7 @@ google-analytics-dashboard {
 /**
  * <google-analytics-chart> styles.
  */
-google-analytics-chart {
+.chart-area {
   box-shadow: 0 0 .5em rgba(0, 0, 0, .1);
   background: #fff;
   margin: 0 2em 2em 0;
@@ -80,10 +80,10 @@ google-analytics-date-selector {
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
-  margin: 0 0 2em 0;
+  margin: 0 0 1em 0;
   /*max-width: 600px;*/
   //padding: 2em .5em 1em 2em;
-  padding: 2em;
+  padding: 1em;
 }
 
 /*google-analytics-date-selector {*/
@@ -114,12 +114,14 @@ google-analytics-date-selector {
     flex: 1 1 0%;
     margin: 0 1.5em 1em 0;
     min-width: 0;
-  };
+  }
+;
   --google-analytics-label: {
     display: block;
     font-weight: bold;
     padding: 0 0 .4em 2px;
-  };
+  }
+;
   --google-analytics-field: {
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -129,11 +131,13 @@ google-analytics-date-selector {
     padding: 6px 12px;
     transition: border-color .2s;
     width: 100%;
-  };
+  }
+;
   --google-analytics-field-focus: {
     border-color: #4d90fe;
     outline: 0;
-  };
+  }
+;
 }
 
 google-analytics-view-selector {
@@ -150,4 +154,39 @@ google-analytics-date-selector {
   --google-analytics-date-selector-input-focus: var(--google-analytics-field-focus);
 }
 
-.chart-loader p{text-align: center;}
+.chart-loader p {
+  text-align: center;
+}
+
+$divider: 1px solid rgba(34, 36, 38, .2);
+
+.border-right::before {
+  content: '';
+  border-right: $divider;
+  position: absolute;
+  height: 80%;
+  right: 0;
+  top: 10%;
+}
+
+.border-bottom::before {
+  border-bottom: $divider;
+  content: '';
+  position: absolute;
+  width: 80%;
+  bottom: 0;
+  left: 10%;
+}
+
+.border-left:before {
+  border-left: $divider;
+  content: '';
+  position: absolute;
+  height: 80%;
+  left: 0;
+  top: 10%;
+}
+
+.alert-next-line{
+  margin-top: 1em;
+}

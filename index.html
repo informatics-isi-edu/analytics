@@ -3,108 +3,76 @@
 <head>
   <meta charset="utf-8">
   <title>Analytics Dashboard</title>
+  <link rel="apple-touch-icon" sizes="57x57" href="/static/images/favicon/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/static/images/favicon/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/static/images/favicon/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/static/images/favicon/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/static/images/favicon/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/static/images/favicon/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/static/images/favicon/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/static/images/favicon/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicon/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/static/images/favicon/android-chrome-192x192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/static/images/favicon/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/static/images/favicon/manifest.json">
+  <link rel="shortcut icon" href="/static/images/favicon/favicon.ico">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="/static/images/favicon/mstile-144x144.png">
+  <meta name="msapplication-config" content="/static/images/favicon/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <script src="static/js/test-google-analytics.js"></script>
   <script src="static/lib/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:700,400,300">
   <link rel="stylesheet" href="static/lib/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="static/css/style.css">
-  <link rel="import" href="components/google-analytics.html">
+  <link rel="import" href="components/analytics-dashboard.html">
   <style is="custom-style">
     /**
      * Page styles.
      */
+    google-analytics-dashboard.hidden{
+      opacity: .3;
+      pointer-events: none;
+    }
+
   </style>
 </head>
 <body>
-
 <header>
   <h1>Analytical Dashboard</h1>
   <h2>Website's Overview</h2>
 </header>
 
-<google-analytics-dashboard class="container">
+<analytics-dashboard view-id="ga:109466530" id="main-dashboard"></analytics-dashboard>
 
-  <!-- <google-analytics-view-selector></google-analytics-view-selector> -->
-  <div class="row">
-    <div class="col-md-3 col-xs-3"></div>
-    <div class="col-md-6 col-xs-6">
-      <google-analytics-date-selector></google-analytics-date-selector>
-    </div>
-    <div class="col-md-3 col-xs-3"></div>
-  </div>
+<script>
+  if( window.googleAnalytics == undefined ){
+    var res = document.getElementsByTagName('google-analytics-dashboard')[0];
+    document.getElementById("main-dashboard").removeChild(res);
 
-  <div class="row">
-    <div class="col-md-12">
-      <google-analytics-chart
-          use-date-filters
-          ids="ga:109466530"
-          type="area"
-          metrics="ga:sessions,ga:users"
-          dimensions="ga:date">
-        <h3>Site Traffic</h3>
-      </google-analytics-chart>
-    </div>
-  </div>
+    var message = "Your Tracking Protection (Adblocker, Ghostry, etc.) is blocking all the elements related to Google Analytics.";
+    var messageNextLine = "Please turn them off and reload the page.";
 
-  <div class="row">
-    <div class="col-md-4">
-      <google-analytics-chart
-          ids="ga:109466530"
-          type="pie"
-          metrics="ga:sessions"
-          dimensions="ga:userType">
-        <h3>New Users vs. Returning</h3>
-      </google-analytics-chart>
-    </div>
-    <div class="col-md-8">
-      <google-analytics-chart
-          ids="ga:109466530"
-          type="table"
-          metrics="ga:sessions,ga:pageviews,ga:sessionDuration,ga:exits"
-          dimensions="ga:source,ga:medium"
-          sort="ga:source,ga:medium"
-          max-results="6">
-        <h3>All Traffic Sources</h3>
-      </google-analytics-chart>
-    </div>
+    var alert = document.createElement("div");
+    alert.className = "alert alert-danger text-center";
+    alert.appendChild(document.createTextNode(message));
 
-  </div>
-  <div class="row">
-    <div class="col-md-8">
-      <google-analytics-chart
-          ids="ga:109466530"
-          type="geo"
-          metrics="ga:users"
-          dimensions="ga:country">
-        <h3>Users by Country</h3>
-      </google-analytics-chart>
-    </div>
-    <div class="col-md-4">
-      <google-analytics-chart
-          ids="ga:109466530"
-          type="pie"
-          metrics="ga:pageviews"
-          dimensions="ga:browser"
-          sort="-ga:pageviews"
-          max-results="6">
-        <h3>Pageviews by Browser</h3>
-      </google-analytics-chart>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <google-analytics-chart
-          ids="ga:109466530"
-          type="column"
-          metrics="ga:avgPageLoadTime"
-          dimensions="ga:date">
-        <h3>Average Page Load Times</h3>
-      </google-analytics-chart>
-    </div>
-  </div>
-</google-analytics-dashboard>
+
+    var alertNextLine = document.createElement("div");
+    alertNextLine.className = "alert-next-line";
+    alertNextLine.appendChild(document.createTextNode(messageNextLine));
+
+    alert.appendChild(alertNextLine);
+
+    document.getElementById("main-dashboard").appendChild(alert);
+  }
+</script>
+
 
 </body>
 
 <!--<script src="static/lib/jquery/dist/jquery.min.js"></script>-->
 <!--<script src="static/lib/bootstrap/dist/js/bootstrap.min.js"></script>-->
-</html>b
+</html>

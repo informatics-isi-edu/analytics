@@ -24,7 +24,7 @@ Google Chart.
 @homepage https://googlewebcomponents.github.io/google-analytics
 -->
 
-<dom-module is="google-analytics-chart">
+<dom-module is="google-analytics-small-chart">
 
   <style>
     :host {
@@ -34,46 +34,51 @@ Google Chart.
       -webkit-flex-direction: column;
       -ms-flex-direction: column;
       flex-direction: column;
-      /*width: 400px;*/
-      height: 350px;
+      width: 150px;
+      height: 100px;
     }
-    :host.small{
-      height: 200px;
-    }
+
     :host > * {
       -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
       flex: 0 0 auto;
     }
+
     :host > google-chart {
       -webkit-flex: 1 0 0%;
       -ms-flex: 1 0 0%;
       flex: 1 0 0%;
       width: auto;
     }
+
+    .total-number {
+      margin: 0;
+    }
+
   </style>
 
   <template>
     <google-analytics-loader all-ready="{{setupReady}}"></google-analytics-loader>
     <google-analytics-query id="query"
-      loading="{{loading}}"
-      get-data-response-handler="{{_boundResponseHandler}}"
-      data="{{data}}"
-      ids="{{ids}}"
-      start-date="{{startDate}}"
-      end-date="{{endDate}}"
-      metrics="{{metrics}}"
-      dimensions="{{dimensions}}"
-      sort="{{sort}}"
-      filters="{{filters}}"
-      segment="{{segment}}"
-      sampling-level="{{samplingLevel}}"
-      start-index="{{startIndex}}"
-      max-results="{{maxResults}}"
-      output="dataTable"
-      src-param="gwc-ga-chart"
-      ></google-analytics-query>
+                            loading="{{loading}}"
+                            get-data-response-handler="{{_boundResponseHandler}}"
+                            data="{{data}}"
+                            ids="{{ids}}"
+                            start-date="{{startDate}}"
+                            end-date="{{endDate}}"
+                            metrics="{{metrics}}"
+                            dimensions="{{dimensions}}"
+                            sort="{{sort}}"
+                            filters="{{filters}}"
+                            segment="{{segment}}"
+                            sampling-level="{{samplingLevel}}"
+                            start-index="{{startIndex}}"
+                            max-results="{{maxResults}}"
+                            output="dataTable"
+                            src-param="gwc-ga-chart"
+    ></google-analytics-query>
     <content select="header,h1,h2,h3,h4,h5,h6"></content>
+    <h4 class="total-number">{{totalCount}}</h4>
     <div class="chart-loader" hidden$="{{!loading}}">
       <div class="loader">
         <span></span>
@@ -83,31 +88,24 @@ Google Chart.
       <p class="small">Loading</p>
     </div>
     <google-chart id="chart" hidden$="{{loading}}"
-      type="{{type}}"
-      data="{{data.dataTable}}">
+                  type="area"
+                  data="{{data.dataTable}}">
     </google-chart>
-    <footer hidden$="{{hideDateFilters}}">
-      <div class="btn-group">
-        <div class="btn btn-default" on-tap="changeToHourly">Hourly</div>
-        <div class="btn btn-default" on-tap="changeToDay">Day</div>
-        <div class="btn btn-default" on-tap="changeToWeek">Week</div>
-        <div class="btn btn-default" on-tap="changeToMonthly">Month</div>
-      </div>
-    </footer>
     <content select="footer"></content>
+    <div class="clearfix"></div>
   </template>
 
 </dom-module>
 
 <script>
 
-  (function() {
+  (function () {
 
     'use strict';
 
     Polymer({
 
-      is: 'google-analytics-chart',
+      is: 'google-analytics-small-chart',
 
       properties: {
 
@@ -145,7 +143,9 @@ Google Chart.
          */
         options: {
           type: Object,
-          value: function() { return null; }
+          value: function () {
+            return null;
+          }
         },
 
         /**
@@ -183,20 +183,11 @@ Google Chart.
           observer: 'setupReadyChanged'
         },
 
-        /**
-         * True if using date filters (hourly, daily, weekly or monthly)
-         */
-        useDateFilters: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
 
-        hideDateFilters: {
-          type: Boolean,
-          computed: 'computeHideDateFilters(useDateFilters, loading)',
-          notify: true,
-          reflectToAttribute: true
+        totalCount: {
+          type: Number,
+          readOnly: true,
+          notify: true
         },
 
         /**
@@ -254,60 +245,54 @@ Google Chart.
 
       },
 
-      ready: function() {
+      ready: function () {
         this._boundResponseHandler = this.handleResponse.bind(this);
         merge(this.$.chart.options, getChartOptions(this.type), this.options);
       },
 
-      setupReadyChanged: function(newVal, oldVal) {
+      setupReadyChanged: function (newVal, oldVal) {
         if (newVal) {
           metadata.get();
         }
       },
 
-      handleResponse: function(response) {
+      handleResponse: function (response) {
         this.rendered = true;
+        this._setTotalCount(humanize(response.totalsForAllResults[this.metrics]));
 
-        metadata.get().then(function(map) {
+        metadata.get().then(function (map) {
           switchApiNamesToDisplayNames(response.dataTable, map);
           ensureProperDataTableTypes(response.dataTable);
           this.$.query.setData(response);
         }.bind(this));
       },
 
-      computeHideDateFilters(useDateFilters, loading){
-//        console.log('useDateFilters: '+ useDateFilters +', loading: '+ loading +', while the metrics are: '+ this.metrics);
-        return !useDateFilters || loading;
-      },
-
-      changeToHourly: function(){
-        this._set()
-      }
     });
 
     /**
      * @module metadata
      */
-    var metadata = (function() {
+    var metadata = (function () {
       var promise;
+
       function queryMetadataAPI() {
         if (!gapi || !gapi.client || !gapi.client.analytics) {
           console.warn("Library not loaded yet!");
           return;
         }
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           gapi.client.analytics.metadata.columns
               .list({
                 reportType: 'ga',
                 _src: 'gwc-ga-chart'
               })
-              .execute(function(response) {
+              .execute(function (response) {
                 if (response.error) {
                   reject(response.error);
                 }
                 else {
                   var map = {};
-                  response.items.forEach(function(item) {
+                  response.items.forEach(function (item) {
                     map[item.id] = item.attributes.uiName;
                   });
                   resolve(map);
@@ -315,15 +300,16 @@ Google Chart.
               });
         });
       }
+
       return {
         /**
          * Return the `queryMetadataAPI` promise. If the promise exists,
          * return it to avoid multiple requests. If the promise does not
          * exist, initiate the request and cache the promise.
          */
-        get: function() {
+        get: function () {
           promise = promise || queryMetadataAPI();
-          return promise.catch(function(err) {
+          return promise.catch(function (err) {
             console.error(err.stack || err);
           });
         }
@@ -337,27 +323,23 @@ Google Chart.
      */
     function getChartOptions(type) {
       var chartOptions = {
-        base: {
-          fontSize: 11,
-          chartArea: {
-            width: '100%'
-          },
-          legend: {
-            position: 'top',
-            alignment: 'start'
-          }
-        },
         area: {
-          height: 150,
-          pointSize: 6,
-          lineWidth: 4,
+          height: 50,
+          width: 200,
+          pointSize: 0,
+          lineWidth: 1,
           areaOpacity: 0.1,
+          legend: {position: "none"},
+          'tooltip': {
+            trigger: 'none'
+          },
           colors: ['#058dc7', '#aadff3'],
           hAxis: {
             format: 'MMM d',
             gridlines: {
               color: 'transparent'
             },
+            textPosition: 'none',
             baselineColor: 'transparent'
           },
           vAxis: {
@@ -366,55 +348,8 @@ Google Chart.
               logScale: true,
               count: 3
             },
-            textPosition: 'in'
+            textPosition: 'none'
           }
-        },
-        bar: {
-          colors: ['#058dc7', '#50b432', '#ed561b'],
-          hAxis: {
-            gridlines: {
-              color: '#e8e8e8'
-            }
-          },
-          vAxis: {
-            textPosition: 'in',
-            textStyle: {
-              strokeWidth: 4,
-            }
-          }
-        },
-        column: {
-          colors: ['#058dc7', '#50b432', '#ed561b'],
-          hAxis: {
-            gridlines: {
-              color: 'transparent'
-            },
-            baselineColor: 'transparent'
-          },
-          vAxis: {
-            gridlines: {
-              color: '#e8e8e8',
-            },
-            textPosition: 'in'
-          },
-
-        },
-        geo: {
-          colorAxis: {
-            minValue: 0,
-            colors: ['#aadff3', '#058dc7']
-          }
-        },
-        pie: {
-          height:270,
-          legend: {
-            position: 'top'
-          },
-          slices: {
-            1: { color: 'rgb(80, 180, 50)' },
-            0: { color: 'rgb(5, 141, 199)' }
-          },
-          pieHole: 0.3
         }
       };
       return merge({}, chartOptions.base, chartOptions[type]);
@@ -428,7 +363,7 @@ Google Chart.
      *   api names and the values are the display names.
      */
     function switchApiNamesToDisplayNames(dataTable, map) {
-      dataTable.cols.forEach(function(col) {
+      dataTable.cols.forEach(function (col) {
         col.label = map[col.id] || col.label;
       });
     }
@@ -460,11 +395,11 @@ Google Chart.
      */
     function merge(target) {
       var sources = Array.prototype.slice.call(arguments, 1);
-      sources.forEach(function(source) {
+      sources.forEach(function (source) {
         // Only merge objects.
         if (!(source && typeof sources == 'object')) return;
 
-        Object.keys(source).forEach(function(key) {
+        Object.keys(source).forEach(function (key) {
           // If the source's key is a 'plain' object, recursively merge.
           if (typeof source[key] == 'object' &&
               Object.getPrototypeOf(source[key]) == Object.prototype) {
@@ -478,6 +413,10 @@ Google Chart.
         });
       });
       return target;
+    }
+
+    function humanize(x) {
+      return parseFloat(x).toFixed(2).replace(/\.?0*$/, '');
     }
 
   }());

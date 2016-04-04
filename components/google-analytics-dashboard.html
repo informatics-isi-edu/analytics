@@ -32,6 +32,9 @@ update query parameters.
 
 <dom-module id="google-analytics-dashboard">
 
+  <style>
+  </style>
+
   <template>
     <content id="content"></content>
   </template>
@@ -40,7 +43,7 @@ update query parameters.
 
 <script>
 
-  (function() {
+  (function () {
 
     'use strict';
 
@@ -56,16 +59,9 @@ update query parameters.
          */
         query: {
           type: Object,
-          value: function() { return {}; }
-        },
-
-        /**
-         * True if user has been authorized
-         */
-        authorized: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+          value: function () {
+            return {};
+          }
         }
 
       },
@@ -74,8 +70,8 @@ update query parameters.
         'analytics-dashboard-control-change': 'queryUpdated'
       },
 
-      ready: function() {
-       this.updateChildren();
+      ready: function () {
+        this.updateChildren();
       },
 
       /**
@@ -86,11 +82,11 @@ update query parameters.
        * @method queryUpdated
        * @param {CustomEvent} event - The event with the query data.
        */
-      queryUpdated: function(event) {
+      queryUpdated: function (event) {
         // Update `this.query` with the passed event data.
-        Object.keys(event.detail).forEach(function(key) {
+        Object.keys(event.detail).forEach(function (key) {
           this.query[key] = event.detail[key];
-        }.bind(this))
+        }.bind(this));
 
         this.updateChildren();
       },
@@ -101,26 +97,14 @@ update query parameters.
        *
        * @method updateChildren
        */
-      updateChildren: function() {
-        // if (!this.authorized) {
-        //   return;
-        // }
-        var charts = Polymer.dom(this).querySelectorAll('google-analytics-chart');
+      updateChildren: function () {
+        var charts = Polymer.dom(this).querySelectorAll('google-analytics-chart,google-analytics-small-chart');
         for (var i = 0, chart; chart = charts[i]; i++) {
-          Object.keys(this.query).forEach(function(key) {
+          Object.keys(this.query).forEach(function (key) {
             chart[key] = this.query[key];
           }.bind(this));
         }
       },
-
-      _signedIn: function() {
-        this.authorized = true;
-        this.updateChildren();
-      },
-
-      _signedOut: function() {
-        this.authorized = false;
-      }
 
     });
 
