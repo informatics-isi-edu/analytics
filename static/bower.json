@@ -1,12 +1,12 @@
 {
-  "name": "aa-google-analytics",
-  "version": "1.2.1",
-  "description": "Encapsulates Google Analytics dashboard features into web components",
-  "homepage": "https://googlewebcomponents.github.io/google-analytics",
+  "name": "analytics",
+  "version": "0.0.1",
+  "description": "Analytics using Google Analytics and Polymer web components.",
+  "homepage": "",
   "authors": [
-    "Philip Walton <philip@philipwalton.com>"
+    "Aref Shafaeibejestan<ashafaei@usc.edu>",
   ],
-  "main": "google-analytics.html",
+  "main": "index.html",
   "license": "Apache2",
   "keywords": [
     "google",

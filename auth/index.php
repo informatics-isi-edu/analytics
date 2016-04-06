@@ -1,4 +1,8 @@
 <?php
+/**
+ * Exchange key with access token.
+ */
+
 require __DIR__ . '/../vendor/autoload.php';
 
 

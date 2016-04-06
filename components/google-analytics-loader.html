@@ -76,6 +76,13 @@ Loads gapi.client.analytics, and watches user signed-in state.
           value: "",
           readOnly: true,
           notify: true
+        },
+
+        error: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          readOnly: true
         }
       },
 
@@ -101,8 +108,12 @@ Loads gapi.client.analytics, and watches user signed-in state.
       },
 
       handleAuthSuccess: function (data) {
-        this._setToken(data.detail.response.access_token);
-        this._setAuthorized(true);
+        try{
+          this._setToken(data.detail.response.access_token);
+          this._setAuthorized(true);
+        }catch(e){
+          this._setError(true); //TODO show some errors
+        }
       },
 
       handleAuthError: function () {

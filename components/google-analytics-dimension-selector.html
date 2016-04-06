@@ -1,0 +1,122 @@
+<link rel="import" href="../static/lib/polymer/polymer.html">
+
+<!--
+TODO
+-->
+
+<dom-module id="google-analytics-dimension-selector">
+
+  <style>
+    :host {
+      display: inline-block;
+    }
+
+  </style>
+
+  <template>
+    <div class="btn-group" id="dimension-selector">
+      <div class="btn btn-default" disabled="disbaled" id="hourd" on-tap="handleTap">Hourly</div>
+      <div class="btn btn-default active" id="dayd" on-tap="handleTap">Day</div>
+      <div class="btn btn-default" id="weekd" on-tap="handleTap">Week</div>
+      <div class="btn btn-default" id="monthd" on-tap="handleTap">Month</div>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  (function () {
+
+    'use strict';
+
+    Polymer({
+
+      is: 'google-analytics-dimension-selector',
+
+      properties: {
+
+        /**
+         * Determines the dimension of values which is different types of date. These types are:
+         *  1. Hourly
+         *  2. Daily
+         *  3. Weekly
+         *  4. Monthly
+         *
+         * @attribute dateMode
+         * @default 'dayd'
+         * @type string
+         */
+        dateMode: {
+          type: String,
+          value: 'dayd',
+          observer: 'dateModeChanged',
+          notify: true,
+          readOnly: true
+        }
+
+      },
+
+      dateModeChanged: function (cur, old) {
+        if (old) {
+          removeClass(Polymer.dom(this.$$('#' + old)).node, "active");
+        }
+        addClass(Polymer.dom(this.$$('#' + cur)).node, "active");
+
+        var dimension = this.translateDateMode(this.dateMode);
+        this.fire('analytics-dashboard-dimension-change', {
+          dimensions: dimension
+        });
+      },
+
+      handleTap: function (e) {
+        this._setDateMode(e.target.id);
+      },
+
+      translateDateMode: function (e) {
+        return {'hourd': 'ga:date', 'dayd': 'ga:date', 'weekd': 'ga:yearWeek', 'monthd': 'ga:yearMonth'}[e];
+      }
+
+    });
+
+    /**
+     * Check if DOM element has class.
+     * @param el
+     * @param className
+     * @returns {boolean}
+     */
+    function hasClass(el, className) {
+      if (el.classList)
+        return el.classList.contains(className);
+      else
+        return !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));
+    }
+
+    /**
+     * Add class to DOM element if it doesn't have the class already.
+     * @param el
+     * @param className
+     */
+    function addClass(el, className) {
+      if (el.classList)
+        el.classList.add(className);
+      else if (!hasClass(el, className)) el.className += " " + className;
+    }
+
+    /**
+     * Remove class from DOM element if it has the class.
+     * @param el
+     * @param className
+     */
+    function removeClass(el, className) {
+      if (el.classList)
+        el.classList.remove(className);
+      else if (hasClass(el, className)) {
+        var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+        el.className = el.className.replace(reg, ' ');
+      }
+    }
+
+  }());
+
+</script>

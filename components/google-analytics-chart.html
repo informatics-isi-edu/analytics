@@ -34,17 +34,21 @@ Google Chart.
       -webkit-flex-direction: column;
       -ms-flex-direction: column;
       flex-direction: column;
-      /*width: 400px;*/
-      height: 350px;
+      width: 150px;
+      height: 100px;
     }
-    :host.small{
+
+    :host:not([sparkline]) {
       height: 200px;
+      width: auto;
     }
+
     :host > * {
       -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
       flex: 0 0 auto;
     }
+
     :host > google-chart {
       -webkit-flex: 1 0 0%;
       -ms-flex: 1 0 0%;
@@ -56,52 +60,46 @@ Google Chart.
   <template>
     <google-analytics-loader all-ready="{{setupReady}}"></google-analytics-loader>
     <google-analytics-query id="query"
-      loading="{{loading}}"
-      get-data-response-handler="{{_boundResponseHandler}}"
-      data="{{data}}"
-      ids="{{ids}}"
-      start-date="{{startDate}}"
-      end-date="{{endDate}}"
-      metrics="{{metrics}}"
-      dimensions="{{dimensions}}"
-      sort="{{sort}}"
-      filters="{{filters}}"
-      segment="{{segment}}"
-      sampling-level="{{samplingLevel}}"
-      start-index="{{startIndex}}"
-      max-results="{{maxResults}}"
-      output="dataTable"
-      src-param="gwc-ga-chart"
-      ></google-analytics-query>
+                            loading="{{loading}}"
+                            get-data-response-handler="{{_boundResponseHandler}}"
+                            data="{{data}}"
+                            ids="{{ids}}"
+                            start-date="{{startDate}}"
+                            end-date="{{endDate}}"
+                            metrics="{{metrics}}"
+                            dimensions="{{dimensions}}"
+                            sort="{{sort}}"
+                            filters="{{filters}}"
+                            segment="{{segment}}"
+                            sampling-level="{{samplingLevel}}"
+                            start-index="{{startIndex}}"
+                            max-results="{{maxResults}}"
+                            output="dataTable"
+                            src-param="gwc-ga-chart"
+    ></google-analytics-query>
     <content select="header,h1,h2,h3,h4,h5,h6"></content>
+    <h4 class="total-number" hidden$="{{!sparkline}}">{{totalCount}}</h4>
     <div class="chart-loader" hidden$="{{!loading}}">
       <div class="loader">
         <span></span>
         <span></span>
         <span></span>
       </div>
-      <p class="small">Loading</p>
+      <p class="small" hidden$="{{sparkline}}">Loading</p>
     </div>
     <google-chart id="chart" hidden$="{{loading}}"
-      type="{{type}}"
-      data="{{data.dataTable}}">
+                  type="{{type}}"
+                  data="{{data.dataTable}}">
     </google-chart>
-    <footer hidden$="{{hideDateFilters}}">
-      <div class="btn-group">
-        <div class="btn btn-default" on-tap="changeToHourly">Hourly</div>
-        <div class="btn btn-default" on-tap="changeToDay">Day</div>
-        <div class="btn btn-default" on-tap="changeToWeek">Week</div>
-        <div class="btn btn-default" on-tap="changeToMonthly">Month</div>
-      </div>
-    </footer>
     <content select="footer"></content>
+    <div class="clearfix"></div>
   </template>
 
 </dom-module>
 
 <script>
 
-  (function() {
+  (function () {
 
     'use strict';
 
@@ -145,7 +143,9 @@ Google Chart.
          */
         options: {
           type: Object,
-          value: function() { return null; }
+          value: function () {
+            return null;
+          }
         },
 
         /**
@@ -165,6 +165,7 @@ Google Chart.
          * True if the chart is currently loading data.
          *
          * @attribute loading
+         * @default false
          * @type boolean
          */
         loading: {
@@ -184,19 +185,27 @@ Google Chart.
         },
 
         /**
-         * True if using date filters (hourly, daily, weekly or monthly)
+         * True if you want to just show a sparkline, instead of a complete chart.
+         *
+         * @attribute sparkline
+         * @default false
+         * @type Boolean
          */
-        useDateFilters: {
+        sparkline: {
           type: Boolean,
-          value: false,
-          reflectToAttribute: true
+          value: false
         },
 
-        hideDateFilters: {
-          type: Boolean,
-          computed: 'computeHideDateFilters(useDateFilters, loading)',
-          notify: true,
-          reflectToAttribute: true
+        /**
+         * Total number of results. Used in sparkline.
+         *
+         * @attribute totalCount
+         * @type Number
+         */
+        totalCount: {
+          type: Number,
+          readOnly: true,
+          notify: true
         },
 
         /**
@@ -254,60 +263,60 @@ Google Chart.
 
       },
 
-      ready: function() {
+      ready: function () {
         this._boundResponseHandler = this.handleResponse.bind(this);
-        merge(this.$.chart.options, getChartOptions(this.type), this.options);
+        merge(this.$.chart.options, getChartOptions(this.type, this.sparkline), this.options);
       },
 
-      setupReadyChanged: function(newVal, oldVal) {
+      setupReadyChanged: function (newVal, oldVal) {
         if (newVal) {
           metadata.get();
         }
       },
 
-      handleResponse: function(response) {
+      /**
+       * Handle response of query.
+       *
+       * @param response
+       */
+      handleResponse: function (response) {
         this.rendered = true;
-
-        metadata.get().then(function(map) {
+        if (this.sparkline) {
+          this._setTotalCount(humanizeNumber(response.totalsForAllResults[this.metrics]));
+        }
+        metadata.get().then(function (map) {
           switchApiNamesToDisplayNames(response.dataTable, map);
           ensureProperDataTableTypes(response.dataTable);
           this.$.query.setData(response);
         }.bind(this));
-      },
-
-      computeHideDateFilters(useDateFilters, loading){
-//        console.log('useDateFilters: '+ useDateFilters +', loading: '+ loading +', while the metrics are: '+ this.metrics);
-        return !useDateFilters || loading;
-      },
-
-      changeToHourly: function(){
-        this._set()
       }
+
     });
 
     /**
      * @module metadata
      */
-    var metadata = (function() {
+    var metadata = (function () {
       var promise;
+
       function queryMetadataAPI() {
         if (!gapi || !gapi.client || !gapi.client.analytics) {
           console.warn("Library not loaded yet!");
           return;
         }
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           gapi.client.analytics.metadata.columns
               .list({
                 reportType: 'ga',
                 _src: 'gwc-ga-chart'
               })
-              .execute(function(response) {
+              .execute(function (response) {
                 if (response.error) {
                   reject(response.error);
                 }
                 else {
                   var map = {};
-                  response.items.forEach(function(item) {
+                  response.items.forEach(function (item) {
                     map[item.id] = item.attributes.uiName;
                   });
                   resolve(map);
@@ -315,15 +324,16 @@ Google Chart.
               });
         });
       }
+
       return {
         /**
          * Return the `queryMetadataAPI` promise. If the promise exists,
          * return it to avoid multiple requests. If the promise does not
          * exist, initiate the request and cache the promise.
          */
-        get: function() {
+        get: function () {
           promise = promise || queryMetadataAPI();
-          return promise.catch(function(err) {
+          return promise.catch(function (err) {
             console.error(err.stack || err);
           });
         }
@@ -335,88 +345,123 @@ Google Chart.
      * These are options suitable to pass to a Google Chart instance.
      * @return {Object} The chart options.
      */
-    function getChartOptions(type) {
-      var chartOptions = {
-        base: {
-          fontSize: 11,
-          chartArea: {
-            width: '100%'
-          },
-          legend: {
-            position: 'top',
-            alignment: 'start'
-          }
-        },
-        area: {
-          height: 150,
-          pointSize: 6,
-          lineWidth: 4,
-          areaOpacity: 0.1,
-          colors: ['#058dc7', '#aadff3'],
-          hAxis: {
-            format: 'MMM d',
-            gridlines: {
-              color: 'transparent'
+    function getChartOptions(type, sparkline) {
+      var chartOptions;
+      if (!sparkline) {
+        chartOptions = {
+          base: {
+            fontSize: 11,
+            chartArea: {
+              width: '100%'
             },
-            baselineColor: 'transparent'
-          },
-          vAxis: {
-            gridlines: {
-              color: '#e8e8e8',
-              logScale: true,
-              count: 3
-            },
-            textPosition: 'in'
-          }
-        },
-        bar: {
-          colors: ['#058dc7', '#50b432', '#ed561b'],
-          hAxis: {
-            gridlines: {
-              color: '#e8e8e8'
+            legend: {
+              position: 'top',
+              alignment: 'start'
             }
           },
-          vAxis: {
-            textPosition: 'in',
-            textStyle: {
-              strokeWidth: 4,
+          area: {
+            height: 150,
+            pointSize: 6,
+            lineWidth: 4,
+            areaOpacity: 0.1,
+            colors: ['#058dc7', '#aadff3'],
+            hAxis: {
+              format: 'MMM d',
+              gridlines: {
+                color: 'transparent'
+              },
+              baselineColor: 'transparent'
+            },
+            vAxis: {
+              gridlines: {
+                color: '#e8e8e8',
+                logScale: true,
+                count: 3
+              },
+              textPosition: 'in'
             }
-          }
-        },
-        column: {
-          colors: ['#058dc7', '#50b432', '#ed561b'],
-          hAxis: {
-            gridlines: {
-              color: 'transparent'
-            },
-            baselineColor: 'transparent'
           },
-          vAxis: {
-            gridlines: {
-              color: '#e8e8e8',
+          bar: {
+            colors: ['#058dc7', '#50b432', '#ed561b'],
+            hAxis: {
+              gridlines: {
+                color: '#e8e8e8'
+              }
             },
-            textPosition: 'in'
+            vAxis: {
+              textPosition: 'in',
+              textStyle: {
+                strokeWidth: 4
+              }
+            }
           },
+          column: {
+            colors: ['#058dc7', '#50b432', '#ed561b'],
+            hAxis: {
+              gridlines: {
+                color: 'transparent'
+              },
+              baselineColor: 'transparent'
+            },
+            vAxis: {
+              gridlines: {
+                color: '#e8e8e8'
+              },
+              textPosition: 'in'
+            }
 
-        },
-        geo: {
-          colorAxis: {
-            minValue: 0,
-            colors: ['#aadff3', '#058dc7']
+          },
+          geo: {
+            colorAxis: {
+              minValue: 0,
+              colors: ['#aadff3', '#058dc7']
+            }
+          },
+          pie: {
+            is3D: true,
+            height: 270,
+            legend: {
+              position: 'top'
+            },
+            slices: {
+              1: {color: 'rgb(80, 180, 50)'},
+              0: {color: 'rgb(5, 141, 199)'}
+            },
+            pieHole: 0.3
           }
-        },
-        pie: {
-          height:270,
-          legend: {
-            position: 'top'
-          },
-          slices: {
-            1: { color: 'rgb(80, 180, 50)' },
-            0: { color: 'rgb(5, 141, 199)' }
-          },
-          pieHole: 0.3
-        }
-      };
+        };
+      } else {
+        chartOptions = {
+          area: {
+            height: 50,
+            width: 200,
+            pointSize: 0,
+            lineWidth: 1,
+            areaOpacity: 0.1,
+            legend: {position: "none"},
+            tooltip: {
+              trigger: 'none'
+            },
+            colors: ['#058dc7', '#aadff3'],
+            hAxis: {
+              format: 'MMM d',
+              gridlines: {
+                color: 'transparent'
+              },
+              textPosition: 'none',
+              baselineColor: 'transparent'
+            },
+            vAxis: {
+              gridlines: {
+                color: '#e8e8e8',
+                logScale: true,
+                count: 3
+              },
+              textPosition: 'none'
+            }
+          }
+        };
+      }
       return merge({}, chartOptions.base, chartOptions[type]);
     }
 
@@ -428,7 +473,7 @@ Google Chart.
      *   api names and the values are the display names.
      */
     function switchApiNamesToDisplayNames(dataTable, map) {
-      dataTable.cols.forEach(function(col) {
+      dataTable.cols.forEach(function (col) {
         col.label = map[col.id] || col.label;
       });
     }
@@ -460,11 +505,11 @@ Google Chart.
      */
     function merge(target) {
       var sources = Array.prototype.slice.call(arguments, 1);
-      sources.forEach(function(source) {
+      sources.forEach(function (source) {
         // Only merge objects.
         if (!(source && typeof sources == 'object')) return;
 
-        Object.keys(source).forEach(function(key) {
+        Object.keys(source).forEach(function (key) {
           // If the source's key is a 'plain' object, recursively merge.
           if (typeof source[key] == 'object' &&
               Object.getPrototypeOf(source[key]) == Object.prototype) {
@@ -478,6 +523,17 @@ Google Chart.
         });
       });
       return target;
+    }
+
+    /**
+     * Format number to just have maximum of two floating points.
+     *
+     * Source: http://stackoverflow.com/a/29249277/1662057
+     * @param x
+     * @returns {string}
+     */
+    function humanizeNumber(x) {
+      return parseFloat(x).toFixed(2).replace(/\.?0*$/, '');
     }
 
   }());

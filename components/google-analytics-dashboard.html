@@ -1,4 +1,5 @@
 <link rel="import" href="../static/lib/polymer/polymer.html">
+<link rel="import" href="../components/google-analytics-import.html">
 
 <!--
 Container element for binding Google Analytics controls to Google Analytics charts.
@@ -10,33 +11,154 @@ update query parameters.
 
 ##### Example
 
-    <google-analytics-dashboard>
-
-      <google-analytics-view-selector></google-analytics-view-selector>
-      <google-analytics-date-selector></google-analytics-date-selector>
-
-      <google-analytics-chart
-        metrics="ga:sessions"
-        dimensions="ga:country"
-        sort="-ga:sessions"
-        max-results="5"
-        chart-type="column">
-      </google-analytics-chart>
-
-    </google-analytics-dashboard>
+    <google-analytics-dashboard view-id="ga:SOMEVIEWID" id="main-dashboard"></google-analytics-dashboard>
 
 @element google-analytics-dashboard
-@demo
-@homepage https://googlewebcomponents.github.io/google-analytics
 -->
 
 <dom-module id="google-analytics-dashboard">
 
   <style>
+    .analytics-small-section {
+      padding-bottom: 15px;
+    }
+
+    google-analytics-chart[sparkline] {
+      cursor: pointer;
+    }
   </style>
 
   <template>
-    <content id="content"></content>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 col-xs-4"></div>
+        <div class="col-md-4 col-xs-4">
+          <google-analytics-date-selector></google-analytics-date-selector>
+        </div>
+        <div class="col-md-4 col-xs-4"></div>
+      </div>
+
+      <div class="row chart-area">
+        <div class="row">
+          <div class="col-md-12 border-bottom">
+            <div class="pull-right">
+              <google-analytics-dimension-selector></google-analytics-dimension-selector>
+            </div>
+            <google-analytics-chart
+                class="small dimension-related"
+                ids="{{viewId}}"
+                type="area"
+                metrics="{{defaultMetrics}}"
+                dimensions="{{dateDimension}}">
+              <h4>{{defaultHeader}}</h4>
+            </google-analytics-chart>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-8">
+            <div class="row">
+              <div class="analytics-small-section border-right col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToSession"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:sessions"
+                    dimensions="{{dateDimension}}">
+                  <h6>Sessions</h6>
+                </google-analytics-chart>
+              </div>
+              <div class="analytics-small-section border-right col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToUser"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:users"
+                    dimensions="{{dateDimension}}">
+                  <h6>Users</h6>
+                </google-analytics-chart>
+              </div>
+              <div class="analytics-small-section col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToPageview"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:pageviews"
+                    dimensions="{{dateDimension}}">
+                  <h6>Pageviews</h6>
+                </google-analytics-chart>
+              </div>
+            </div>
+            <div class="row">
+              <div class="analytics-small-section border-right col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToPageSession"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:pageviewsPerSession"
+                    dimensions="{{dateDimension}}">
+                  <h6>Pages / Session</h6>
+                </google-analytics-chart>
+              </div>
+              <div class="analytics-small-section border-right col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToAVGSessionDuration"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:avgSessionDuration"
+                    dimensions="{{dateDimension}}">
+                  <h6>Average Session Duration</h6>
+                </google-analytics-chart>
+              </div>
+              <div class="analytics-small-section col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToBounceRate"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:bounceRate"
+                    dimensions="{{dateDimension}}">
+                  <h6>Bounce Rate</h6>
+                </google-analytics-chart>
+              </div>
+            </div>
+            <div class="row">
+              <div class="analytics-small-section border-right col-md-4">
+                <google-analytics-chart
+                    sparkline
+                    class="dimension-related"
+                    on-tap="changeToPercentNewSession"
+                    ids="{{viewId}}"
+                    type="area"
+                    metrics="ga:percentNewSessions"
+                    dimensions="{{dateDimension}}">
+                  <h6>% New Sessions</h6>
+                </google-analytics-chart>
+              </div>
+            </div>
+          </div>
+          <div class="border-left col-md-4">
+            <google-analytics-chart
+                ids="{{viewId}}"
+                type="pie"
+                metrics="ga:sessions"
+                dimensions="ga:userType">
+              <h4>New Users vs. Returning</h4>
+            </google-analytics-chart>
+          </div>
+        </div>
+      </div>
+    </div>
   </template>
 
 </dom-module>
@@ -62,12 +184,61 @@ update query parameters.
           value: function () {
             return {};
           }
+        },
+
+        /**
+         * View ID for charts.
+         *
+         * @attribute viewId
+         * @type String
+         */
+        viewId: {
+          type: String
+        },
+
+        /**
+         * Metric of the default chart (The big chart on top).
+         *
+         * @attribute defaultMetrics
+         * @default ga:sessions
+         * @type string
+         */
+        defaultMetrics: {
+          type: String,
+          value: 'ga:sessions',
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * Header of the default chart (The big chart on top).
+         *
+         * @attribute defaultHeader
+         * @default Sessions
+         * @type String
+         */
+        defaultHeader: {
+          type: String,
+          value: 'Sessions',
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * Date dimension for the charts (Hourly, Daily, Weekly, and Monthly).
+         */
+        dateDimension: {
+          type: String,
+          value: "ga:date",
+          notify: true,
+          readOnly: true
         }
 
       },
 
       listeners: {
-        'analytics-dashboard-control-change': 'queryUpdated'
+        'analytics-dashboard-control-change': 'queryUpdated',
+        'analytics-dashboard-dimension-change': 'dimensionUpdated'
       },
 
       ready: function () {
@@ -83,12 +254,21 @@ update query parameters.
        * @param {CustomEvent} event - The event with the query data.
        */
       queryUpdated: function (event) {
-        // Update `this.query` with the passed event data.
-        Object.keys(event.detail).forEach(function (key) {
-          this.query[key] = event.detail[key];
-        }.bind(this));
-
+        this.updateQuery(event);
         this.updateChildren();
+      },
+
+      /**
+       * The `dimensionUpdated` method is the callback for whenever the
+       * `analytics-dashboard-dimension-change` event is fired. It updates the
+       * query attribute, which is then sent to child charts.
+       *
+       * @method dimensionUpdated
+       * @param {CustomEvent} event - The event with the query data.
+       */
+      dimensionUpdated: function (event) {
+        this.updateQuery(event);
+        this.updateChildren('.dimension-related');
       },
 
       /**
@@ -97,14 +277,65 @@ update query parameters.
        *
        * @method updateChildren
        */
-      updateChildren: function () {
-        var charts = Polymer.dom(this).querySelectorAll('google-analytics-chart,google-analytics-small-chart');
+      updateChildren: function (selector) {
+        var sel = typeof selector !== 'undefined' ? selector : 'google-analytics-chart';
+        var charts = Polymer.dom(this.root).querySelectorAll(sel);
         for (var i = 0, chart; chart = charts[i]; i++) {
           Object.keys(this.query).forEach(function (key) {
             chart[key] = this.query[key];
           }.bind(this));
         }
       },
+
+      /**
+       * Updates the query, based on detail attribute in event.
+       *
+       * @method updateQuery
+       * @param event
+       */
+      updateQuery: function (event) {
+        // Update `this.query` with the passed event data.
+        Object.keys(event.detail).forEach(function (key) {
+          this.query[key] = event.detail[key];
+        }.bind(this));
+      },
+
+      //TODO refactor these functions into one listener.
+
+      changeToSession: function (e) {
+        this._setDefaultHeader('Sessions');
+        this._setDefaultMetrics('ga:sessions');
+      },
+
+      changeToUser: function (e) {
+        this._setDefaultHeader('Users');
+        this._setDefaultMetrics('ga:users');
+      },
+
+      changeToPageview: function (e) {
+        this._setDefaultHeader('Pageviews');
+        this._setDefaultMetrics('ga:pageviews');
+      },
+
+      changeToPageSession: function (e) {
+        this._setDefaultHeader('Pages / Session');
+        this._setDefaultMetrics('ga:pageviewsPerSession');
+      },
+
+      changeToAVGSessionDuration: function () {
+        this._setDefaultHeader('Average Session Duration');
+        this._setDefaultMetrics('ga:avgSessionDuration');
+      },
+
+      changeToBounceRate: function (e) {
+        this._setDefaultHeader('Bounce Rate');
+        this._setDefaultMetrics('ga:bounceRate');
+      },
+
+      changeToPercentNewSession: function (e) {
+        this._setDefaultHeader('% New Sessions');
+        this._setDefaultMetrics('ga:percentNewSessions');
+      }
 
     });
 

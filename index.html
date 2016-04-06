@@ -22,12 +22,13 @@
   <meta name="msapplication-TileImage" content="/static/images/favicon/mstile-144x144.png">
   <meta name="msapplication-config" content="/static/images/favicon/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
+
   <script src="static/js/test-google-analytics.js"></script>
   <script src="static/lib/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:700,400,300">
   <link rel="stylesheet" href="static/lib/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="static/css/style.css">
-  <link rel="import" href="components/analytics-dashboard.html">
+  <link rel="import" href="components/google-analytics-dashboard.html">
   <style is="custom-style">
     /**
      * Page styles.
@@ -45,7 +46,7 @@
   <h2>Website's Overview</h2>
 </header>
 
-<analytics-dashboard view-id="ga:109466530" id="main-dashboard"></analytics-dashboard>
+<google-analytics-dashboard view-id="ga:109466530" id="main-dashboard"></google-analytics-dashboard>
 
 <script>
   if( window.googleAnalytics == undefined ){
